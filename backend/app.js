@@ -1,3 +1,4 @@
+
 const express = require("express");
 const app = express();
 
@@ -20,7 +21,9 @@ const cart = require("./routes/cart");
 const aiRouter = require("./routes/ai.routes");
 
 // Middlewares
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+const allowedOrigins = (
+  process.env.FRONTEND_URL || "http://localhost:5173"
+)
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
@@ -29,19 +32,34 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow server-to-server requests and configured frontend origins.
-      if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin.replace(/\/$/, ""))
+      ) {
         return callback(null, true);
       }
-      return callback(new Error("This origin is not allowed by CORS."));
+
+      return callback(
+        new Error("This origin is not allowed by CORS.")
+      );
     },
     credentials: true,
   })
 );
+
 app.use(cookieParser());
 app.use(fileUpload());
 
 app.use(express.json({ limit: "30kb" }));
 app.use(express.urlencoded({ extended: true, limit: "30kb" }));
+
+// Health Check Route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "FoodGenAI Backend is running",
+  });
+});
 
 // Routes
 app.use("/api/v1/eats", foodRouter);
@@ -53,16 +71,19 @@ app.use("/api/v1", payment);
 app.use("/api/v1/eats/cart", cart);
 app.use("/api/v1/ai", aiRouter);
 
-
 // View Engine
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
 // 404 Handler
 app.use((req, res, next) => {
-  next(new ErrorHandler(`Route ${req.originalUrl} not found`, 404));
+  next(
+    new ErrorHandler(
+      `Route ${req.originalUrl} not found`,
+      404
+    )
+  );
 });
-
 
 // Global Error Handler
 app.use(errorMiddleware);
