@@ -32,11 +32,11 @@ async function startServer() {
   try {
     await connectDatabase();
 
-    const server = app.listen(PORT, () => {
-      console.log(
-        `Server started on PORT: ${PORT} in ${process.env.NODE_ENV || "development"} mode.`
-      );
-    });
+    const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(
+    `Server started on PORT: ${PORT} in ${process.env.NODE_ENV || "development"} mode.`
+  );
+});
 
     process.on("unhandledRejection", (err) => {
       console.error("Unhandled promise rejection:", err);
