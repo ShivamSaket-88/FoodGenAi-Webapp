@@ -32,8 +32,18 @@ export const fetchCartItems = () => async (dispatch) => {
 // ADD ITEM TO CART
 export const addItemToCart =
   (foodItemId, restaurantId, quantity) => async (dispatch) => {
+    console.log("🛒 ADD TO CART FUNCTION CALLED");
+
+    console.log("Cart Payload:", {
+      foodItemId,
+      restaurantId,
+      quantity,
+    });
+
     try {
       dispatch(cartRequest());
+
+      console.log("🚀 Sending POST request...");
 
       const { data } = await api.post(
         "/v1/eats/cart/add-to-cart",
@@ -44,12 +54,20 @@ export const addItemToCart =
         }
       );
 
+      console.log("✅ ADD TO CART RESPONSE:", data);
+
       dispatch(cartSuccess(data.cart));
 
       return data.cart;
     } catch (error) {
+      console.error("❌ ADD TO CART ERROR:", error);
+      console.error("❌ ERROR RESPONSE:", error.response?.data);
+      console.error("❌ ERROR STATUS:", error.response?.status);
+
       const message =
-        error.response?.data?.message || "Unable to add item to cart";
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to add item to cart";
 
       dispatch(cartFail(message));
 
