@@ -20,7 +20,29 @@ const payment = require("./routes/payment");
 const cart = require("./routes/cart");
 const aiRouter = require("./routes/ai.routes");
 
-// Middlewares
+// ==========================================
+// REQUEST LOGGER (TEMPORARY DEBUGGING)
+// ==========================================
+
+app.use((req, res, next) => {
+  console.log("REQUEST RECEIVED:", req.method, req.originalUrl);
+
+  res.on("finish", () => {
+    console.log(
+      "RESPONSE SENT:",
+      req.method,
+      req.originalUrl,
+      res.statusCode
+    );
+  });
+
+  next();
+});
+
+// ==========================================
+// CORS CONFIGURATION
+// ==========================================
+
 const allowedOrigins = (
   process.env.FRONTEND_URL || "http://localhost:5173"
 )
@@ -31,13 +53,14 @@ const allowedOrigins = (
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow server-to-server requests and configured frontend origins.
       if (
         !origin ||
         allowedOrigins.includes(origin.replace(/\/$/, ""))
       ) {
         return callback(null, true);
       }
+
+      console.log("CORS BLOCKED ORIGIN:", origin);
 
       return callback(
         new Error("This origin is not allowed by CORS.")
@@ -47,13 +70,20 @@ app.use(
   })
 );
 
+// ==========================================
+// GLOBAL MIDDLEWARES
+// ==========================================
+
 app.use(cookieParser());
 app.use(fileUpload());
 
 app.use(express.json({ limit: "30kb" }));
 app.use(express.urlencoded({ extended: true, limit: "30kb" }));
 
-// Health Check Route
+// ==========================================
+// HEALTH CHECK
+// ==========================================
+
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -61,7 +91,10 @@ app.get("/", (req, res) => {
   });
 });
 
-// Routes
+// ==========================================
+// API ROUTES
+// ==========================================
+
 app.use("/api/v1/eats", foodRouter);
 app.use("/api/v1/eats/menus", menuRouter);
 app.use("/api/v1/eats/stores", restaurant);
@@ -71,11 +104,17 @@ app.use("/api/v1", payment);
 app.use("/api/v1/eats/cart", cart);
 app.use("/api/v1/ai", aiRouter);
 
-// View Engine
+// ==========================================
+// VIEW ENGINE
+// ==========================================
+
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
-// 404 Handler
+// ==========================================
+// 404 HANDLER
+// ==========================================
+
 app.use((req, res, next) => {
   next(
     new ErrorHandler(
@@ -85,7 +124,10 @@ app.use((req, res, next) => {
   );
 });
 
-// Global Error Handler
+// ==========================================
+// GLOBAL ERROR HANDLER
+// ==========================================
+
 app.use(errorMiddleware);
 
 module.exports = app;
